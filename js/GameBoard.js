@@ -21,17 +21,16 @@ class GameBoard {
 			]).then((values) => {
 				this.stageAnimationEnd();
 
-				Promise.seque([
-					this.viewData,
-					this.removeData
-				]).then(() => {
-					resolve(1);
-				})
 				
-				// [, ].reduce((stacks, promise) => {
-				// 	return stacks.then(promise.bind(this));
-				// }, Promise.resolve()).then(() => {
-				// });
+				[this.viewData, this.removeData].reduce((stacks, promise) => {
+					return stacks.then(promise.bind(this));
+				}, Promise.resolve()).then(() => {
+
+					this.inLoop().then(() => {
+						resolve(1);
+					});
+
+				});
 
 				// this.viewFruit().then(() => {
 				// 	this.removeFruit().then(() => {
@@ -51,6 +50,30 @@ class GameBoard {
 		});
 	}
 
+	inLoop () {
+		return new Promise((resolve, reject) => {
+			// reduce 로 대체하기
+
+			this.viewData().then(() => {
+
+				this.reDefineData().then(() => {
+
+					this.viewData();
+
+					this.pangChk().then(() => {
+						if (this.removeTemp.length) {
+							setTimeout(() => {
+								this.removeData().then(() => {
+									this.inLoop();
+								});
+							}, 500);
+						}
+					});
+				});
+			});
+		});
+	}
+
 	stageAnimationEnd () {
 		$("#overrap").removeClass('animation');
 
@@ -66,10 +89,36 @@ class GameBoard {
 		}
 	}
 
+	reDefineData () {
+		return new Promise((resolve, reject) => {
+			let reDefineData = [];
+
+			for (var i = 0; i < 8; i++) {
+				reDefineData[i] = [];
+
+				for (var j = 0; j < 8; j++) {
+					let isData = this.Game.data[i].find(x => x.y == j);
+
+					reDefineData[i][j] = (isData == undefined || isData.remove) ? new Fruit(i, j) : isData;
+				}
+			}
+
+			this.Game.data = reDefineData;
+
+			setTimeout(() => {
+				resolve(this.Game.data);
+			}, 100);
+		});
+	}
+
 	viewData () {
 		return new Promise((resolve, reject) => {
 			dd("viewData Start");
 			multi(this.Game.data, function(a, b) {
+				if (b == undefined) {
+					return true;
+				}
+
 				b.refreshPos();
 			});
 
@@ -79,16 +128,22 @@ class GameBoard {
 
 	removeData () {
 		return new Promise((resolve, reject) => {
-			dd("removeData Start");
+			let isRemove = 0;
 
 			$.each(this.removeTemp, (a, b) => {
+				isRemove = 1;
+
 				b.destroy();
 
-				if (a == this.removeTemp.length-1) {
-					dd("removeData End")
-					resolve("end");
-				}
+				// if (a == this.removeTemp.length-1) {
+				// }
 			});
+
+			if (isRemove) {
+				setTimeout(() => { resolve("end") }, 500);
+			} else {
+				resolve("asd");
+			}
 		});
 	}
 
@@ -106,7 +161,11 @@ class GameBoard {
 					bottom : baseData[val.x][val.y+1],
 					top : baseData[val.x][val.y-1],
 					left : baseData[val.x-1] == undefined ? undefined : baseData[val.x-1][val.y],
-					right : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y]
+					leftTop : baseData[val.x-1] == undefined ? undefined : baseData[val.x-1][val.y-1],
+					leftBot : baseData[val.x-1] == undefined ? undefined : baseData[val.x-1][val.y+1],
+					right : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y],
+					rightTop : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y-1],
+					rightBot : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y+1]
 				}
 
 				if (arrow == "") {

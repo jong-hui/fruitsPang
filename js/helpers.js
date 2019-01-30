@@ -86,14 +86,12 @@ function multi (multiArr, cb, cb2 = function() {}) {
 }
 
 function wait (sec) {
-	return function() {
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				console.log(sec);
-				resolve(sec);
-			}, sec);
-		});
-	}
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			console.log(sec);
+			resolve(sec);
+		}, sec);
+	});
 }
 
 // $.prototype.

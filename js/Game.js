@@ -79,6 +79,9 @@ class Game {
 
 		$("#text-score").text(i.toLocaleString());
 
+		if (this.scoreInterval) {
+			this.scoreInterval.stop();
+		}
 		this.scoreInterval = new intervalMicro(() => {
 			if (i >= end) {
 				$("#text-score").text(end.toLocaleString());

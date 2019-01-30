@@ -23,20 +23,24 @@ class BoardItem {
 		});
 	}
 
-	removeChk () {
-		this.remove = 1;
-
-		dd("im die :(", this.element);
-	}
-
 	destroy () {
 		this.element.addClass('remove');
 
+		$.each(CurGame.data[this.x], (a, b) => {
+			dd(this.x, this.y, a, b);
+			if (b != undefined && b.y < this.y) {
+				b.y += 1;
+			}
+		});
+
 		setTimeout(() => {
 			this.element.removeClass('remove').remove();
-
-			delete CurGame.data[this.x][this.y];
+			// delete CurGame.data[this.x][this.y];
 		}, 500);
+		
+		CurGame.score += 100;
+
+		this.remove = 1;
 	}
 
 
