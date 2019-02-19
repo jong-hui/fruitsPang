@@ -25,7 +25,7 @@ svg를 이용하여 애니메이션을 구현하였고, javascript를 사용하�
 javascript는 es6문법으로 작성하였고, 각각의 파일마다 class가 존재합니다.  
 각각의 파일마다 하는 역할을 나누었기때문에 유지보수가쉽게 작성하였습니다.
 
-![게임플레이](https://github.com/jong-hui/fruitsPang/tree/master/imgs/gameplay.gif)
+![게임플레이](https://raw.githubusercontent.com/jong-hui/fruitsPang/master/imgs/gameplay.gif)
 
 ## 개발후
 
