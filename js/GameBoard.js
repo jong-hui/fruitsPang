@@ -11,65 +11,52 @@ class GameBoard {
 
 	stageAnimation (stage) {
 		return new Promise((resolve, reject) => {
-			$("#overrap").addClass('animation');
-			this.setData();
+			this.Game.timerInterval.stop();
+			this.Game.data = [];
 
+			$("#game-board-items").html('');
+
+			$("#overrap").addClass('animation');
 
 			Promise.all([
+				this.reDefineData(),
 				this.pangChk(),
 				wait(4000)
 			]).then((values) => {
 				this.stageAnimationEnd();
 
-				
-				[this.viewData, this.removeData].reduce((stacks, promise) => {
-					return stacks.then(promise.bind(this));
-				}, Promise.resolve()).then(() => {
-
-					this.inLoop().then(() => {
-						resolve(1);
-					});
-
+				this.inLoop().then(() => {
+					resolve(1);
 				});
-
-				// this.viewFruit().then(() => {
-				// 	this.removeFruit().then(() => {
-				// 		resolve(1);
-				// 	});
-				// });
-
-				// Promise.all([
-				// 	this.viewFruit(),
-				// 	this.removeFruit()
-				// ]).then(() => {
-				// 	resolve(1);
-				// });
-
 			});
 
 		});
 	}
 
 	inLoop () {
+		this.Game.timerInterval.stop();
+
 		return new Promise((resolve, reject) => {
-			// reduce 로 대체하기
+			Promise.seque([
+				this.reDefineData,
+				this.viewData,
+				this.pangChk
+			], this).then(() => {
 
-			this.viewData().then(() => {
+				if (this.removeTemp.length) {
 
-				this.reDefineData().then(() => {
-
-					this.viewData();
-
-					this.pangChk().then(() => {
-						if (this.removeTemp.length) {
-							setTimeout(() => {
-								this.removeData().then(() => {
-									this.inLoop();
-								});
-							}, 500);
-						}
+					Promise.seque([
+						this.removeData,
+						this.inLoop
+					], this).then(() => {
+						resolve(1);
 					});
-				});
+				} else {
+					resolve(0);
+
+					this.Game.timerInterval.start();
+					this.Game.nextStageChk();
+				}
 			});
 		});
 	}
@@ -79,6 +66,7 @@ class GameBoard {
 
 	}
 
+	// setData를 reDefineData로 대체 가능
 	setData () {
 
 		for (var i = 0; i < 8; i++) {
@@ -97,8 +85,9 @@ class GameBoard {
 				reDefineData[i] = [];
 
 				for (var j = 0; j < 8; j++) {
-					let isData = this.Game.data[i].find(x => x.y == j);
-
+					// y 값만 비교하는게 아니라 x값도 비교하도록 수정하기.
+					let isData = this.Game.data[i] ? this.Game.data[i].find(x => x.y == j) : undefined;
+ 
 					reDefineData[i][j] = (isData == undefined || isData.remove) ? new Fruit(i, j) : isData;
 				}
 			}
@@ -113,7 +102,6 @@ class GameBoard {
 
 	viewData () {
 		return new Promise((resolve, reject) => {
-			dd("viewData Start");
 			multi(this.Game.data, function(a, b) {
 				if (b == undefined) {
 					return true;
@@ -122,11 +110,13 @@ class GameBoard {
 				b.refreshPos();
 			});
 
-			setTimeout(() => { dd("viewData End"); resolve('done') }, 500);
+			setTimeout(() => { resolve('done') }, 500);
 		});
 	}
 
 	removeData () {
+		let prevScore = this.Game.score;
+
 		return new Promise((resolve, reject) => {
 			let isRemove = 0;
 
@@ -134,12 +124,11 @@ class GameBoard {
 				isRemove = 1;
 
 				b.destroy();
-
-				// if (a == this.removeTemp.length-1) {
-				// }
 			});
 
 			if (isRemove) {
+				this.Game.scoreAnimation(prevScore, this.Game.score);
+				// dd(this.Game.score, prevScore);
 				setTimeout(() => { resolve("end") }, 500);
 			} else {
 				resolve("asd");
@@ -157,16 +146,7 @@ class GameBoard {
 				arr.push(val);
 
 				let isNext = 0;
-				let tester = {
-					bottom : baseData[val.x][val.y+1],
-					top : baseData[val.x][val.y-1],
-					left : baseData[val.x-1] == undefined ? undefined : baseData[val.x-1][val.y],
-					leftTop : baseData[val.x-1] == undefined ? undefined : baseData[val.x-1][val.y-1],
-					leftBot : baseData[val.x-1] == undefined ? undefined : baseData[val.x-1][val.y+1],
-					right : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y],
-					rightTop : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y-1],
-					rightBot : baseData[val.x+1] == undefined ? undefined : baseData[val.x+1][val.y+1]
-				}
+				let tester = val.getArround(baseData);
 
 				if (arrow == "") {
 					$.each(tester, function(a, b) {

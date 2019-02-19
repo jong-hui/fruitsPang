@@ -46,32 +46,36 @@ class Game {
 		this.score = 0;
 
 		$("#text-nickname").text(this.nickname);
+		$("#text-score").text(0);
 	}
 
 	GameStartInit () {
-		this.GameConfigLoad();
-
+		this.GameTimerRefresh();
 		this.stageUp(0);
 	}
 
 	stageUp (stage) {
 		this.stage = stage;
+		this.GameConfigLoad();
+
+		if (this.timerInterval) {this.timerInterval.stop()}
 
 		this.GameBoarder.stageAnimation(stage).then(() => {
 			// 이때부터 컨트롤 가능
 			
-			this.GameTimerRefresh();
 		});
 	}
 
 	GameTimerRefresh () {
-		this.timerInterval = intervalMicro(() => {
-			this.timer--;
-		}, 1000);
+		this.timerInterval = new intervalMicro(() => {
+			this.timer -= 0.1;
+		}, 100);
 	}
 
 	nextStageChk () {
-
+		if (this.maxScore <= this.score) {
+			this.stageUp(this.stage+1);
+		}
 	}
 
 	scoreAnimation (start, end) {
@@ -93,7 +97,15 @@ class Game {
 			i += Math.ceil((end - start) / 100);
 
 			$("#text-score").text(i.toLocaleString());
-		}, 1);
+		}, 5);
+	}
+
+	activeThisItem (id) {
+		if (CurGame.activeItem) {
+			CurGame.activeItem.off();
+		}
+
+		CurGame.activeItem = new ActiveItem(id);
 	}
 
 	get timer () {
@@ -112,11 +124,8 @@ class Game {
 	}
 
 	set score (newScore) {
-		this.scoreAnimation(this.score, newScore);
+		// this.scoreAnimation(this.score, newScore);
 		this._score = newScore;
-		
-		this.nextStageChk();
-
 	}
 
 	get stage () {
@@ -125,6 +134,7 @@ class Game {
 
 	set stage (newStage) {
 		this._stage = newStage;
+		$("#text-stage").text("STAGE "+((newStage*1+1).toLocaleString()));
 	}
 
 }

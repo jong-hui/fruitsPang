@@ -22,9 +22,9 @@ $.prototype.outAnimate = function (cl) {
 	return this;
 }
 
-Promise.seque = function(arr) {
+Promise.seque = function(arr, bind) {
 	return arr.reduce((prevPro, curPro) => {
-		return prevPro.then(curPro);
+		return prevPro.then(curPro.bind(bind));
 	}, Promise.resolve());
 }
 
@@ -93,5 +93,20 @@ function wait (sec) {
 		}, sec);
 	});
 }
+
+function getArrowFromKeyCode (keyCode) {
+	// if (Config.keyMap[keyCode] == undefined) return ;
+	return Config.keyMap[keyCode];
+}
+
+function flipArrow (arrow) {
+	return ({
+		left : "right",
+		right : "left",
+		top : "bottom",
+		bottom : "top"
+	})[arrow];
+}
+
 
 // $.prototype.

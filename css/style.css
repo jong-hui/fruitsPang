@@ -168,7 +168,7 @@ svg {
 	position: absolute;
 	width: 81px;
 	height: 81px;
-	transition: 0.5s;
+	transition: 0.5s cubic-bezier(1,1.37,.3,.91);
 	/*float: left;*/
 	/*margin-bottom: 7px;*/
 }

@@ -13,12 +13,9 @@ class Fruit extends BoardItem {
 		this.fruitName = Config.fruits[this.fruitId];
 		this.fruitSrc = Config.fruitsSrc[this.fruitId];
 		this.id = id;
-		// this.item = item;
+		this.item = item;
 
-		this.standBy();
+		// this.standBy();
 	}
 
-	standBy () {
-
-	}
 }
